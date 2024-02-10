@@ -416,7 +416,7 @@ func AcceptBasketRequests(w http.ResponseWriter, r *http.Request) {
 			go forwardAndForget(request, config, name)
 		}
 
-		writeBasketResponse(w, r, name, basket)
+		writeBasketResponse(w, request, name, basket)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 	}
@@ -477,7 +477,7 @@ func forwardAndProxyResponse(w http.ResponseWriter, request *RequestData, config
 	}
 }
 
-func writeBasketResponse(w http.ResponseWriter, r *http.Request, name string, basket Basket) {
+func writeBasketResponse(w http.ResponseWriter, r *RequestData, name string, basket Basket) {
 	response := basket.GetResponse(r.Method)
 	if response == nil {
 		response = &defaultResponse
@@ -489,7 +489,7 @@ func writeBasketResponse(w http.ResponseWriter, r *http.Request, name string, ba
 	}
 
 	// body
-	if response.IsTemplate && len(response.Body) > 0 {
+	if response.IsTemplate && len(response.Body) == 0 {
 		// template
 		t, err := template.New(name + "-" + r.Method).Parse(response.Body)
 		if err != nil {
@@ -499,8 +499,17 @@ func writeBasketResponse(w http.ResponseWriter, r *http.Request, name string, ba
 			// status
 			w.WriteHeader(response.Status)
 			// templated body
-			t.Execute(w, r.URL.Query())
+			q, _ := url.ParseQuery(r.Query)
+			t.Execute(w, q)
 		}
+	} else if response.IsScript && len(response.Body) > 0 {
+		res, err := scriptResponse(name, response.Body, r)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintln(w, err)
+		}
+		w.WriteHeader(http.StatusAccepted)
+		w.Write([]byte(res))
 	} else {
 		// status
 		w.WriteHeader(response.Status)

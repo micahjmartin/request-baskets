@@ -30,6 +30,7 @@ type ResponseConfig struct {
 	Headers    http.Header `json:"headers"`
 	Body       string      `json:"body"`
 	IsTemplate bool        `json:"is_template"`
+	IsScript   bool        `json:"is_script"`
 }
 
 // BasketAuth describes basket authentication response that is sent when new basket is created.

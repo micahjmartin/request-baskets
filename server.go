@@ -17,6 +17,14 @@ var httpClient *http.Client
 var httpInsecureClient *http.Client
 var version *Version
 
+// Allow CORS so we can make requests from any site
+func corsAllow(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		next.ServeHTTP(w, r)
+	})
+}
+
 // CreateServer creates an instance of Request Baskets server
 func CreateServer(config *ServerConfig) *http.Server {
 	version = &Version{
@@ -87,7 +95,10 @@ func CreateServer(config *ServerConfig) *http.Server {
 	router.NotFound = http.HandlerFunc(AcceptBasketRequests)
 
 	log.Printf("[info] HTTP server is listening on %s:%d", serverConfig.ServerAddr, serverConfig.ServerPort)
-	server := &http.Server{Addr: fmt.Sprintf("%s:%d", serverConfig.ServerAddr, serverConfig.ServerPort), Handler: router}
+	server := &http.Server{
+		Addr:    fmt.Sprintf("%s:%d", serverConfig.ServerAddr, serverConfig.ServerPort),
+		Handler: corsAllow(router),
+	}
 
 	go shutdownHook()
 	return server

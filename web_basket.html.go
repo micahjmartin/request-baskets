@@ -329,6 +329,7 @@ const (
       $("#response_status").val(response.status);
       $("#response_body").val(response.body);
       $("#response_is_template").prop("checked", response.is_template);
+      $("#response_is_script").prop("checked", response.is_script);
 
       // headers
       $("#response_headers").html(""); // reset
@@ -379,6 +380,7 @@ const (
       response.status = parseInt($("#response_status").val());
       response.body = $("#response_body").val();
       response.is_template = $("#response_is_template").prop("checked");
+      response.is_script = $("#response_is_script").prop("checked");
       response.headers = {};
       $("#response_headers > div.row").each( function(index) {
         var name = $("#header_name_" + index).val();
@@ -767,6 +769,9 @@ const (
           </div>
           <div class="checkbox">
             <label><input type="checkbox" id="response_is_template"> Process body as HTML template</label>
+          </div>
+          <div class="script">
+            <label><input type="checkbox" id="response_is_script"> Process body as Starlark script</label>
           </div>
         </div>
         <div class="modal-footer">

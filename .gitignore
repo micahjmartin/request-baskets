@@ -4,6 +4,7 @@ request-baskets
 *.o
 *.a
 *.so
+*.db
 
 # Folders
 _obj
